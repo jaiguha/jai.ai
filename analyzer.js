@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { File, Upload, Play, ChevronDown, ChevronRight, AlertCircle, CheckCircle, Info } from 'lucide-react';
 import AnalysisResultsViewer from './AnalysisResultsViewer';
@@ -170,7 +171,7 @@ const ABAPAnalyzer = () => {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold">Configuration</h2>
                 <div className="flex items-center gap-2">
-                  <Server className="w-4 h-4" />
+                  <Database className="w-4 h-4" />
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                     configLoaded && analysisSettings.apiKey 
                       ? 'bg-green-100 text-green-800' 
