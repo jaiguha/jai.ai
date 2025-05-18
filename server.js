@@ -10,3 +10,6 @@ app.get('/api/config', (req, res) => {
     apiBaseUrl: process.env.API_BASE_URL || '' // Optional base URL
   });
 });
+
+// Add this at the top of server.js
+require('dotenv').config();
