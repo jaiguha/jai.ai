@@ -17,15 +17,15 @@ class ABAPAnalyzer extends React.Component {
   constructor(props) {
     super(props);
     
-    // Initialize state
+    // Initialize state without hardcoded model names
     this.state = {
       files: [],
       analysisSettings: {
         agents: ['functionality', 'technical', 'logic', 'context'],
-        model: 'claude-3-7-sonnet-20250219',
+        model: '', // No hardcoded model
         outputFormat: 'json',
         apiKey: '',
-        provider: 'anthropic',
+        provider: '', // No hardcoded provider
         apiBaseUrl: ''
       },
       isAnalyzing: false,
@@ -40,11 +40,6 @@ class ABAPAnalyzer extends React.Component {
     this.fileInputRef = React.createRef();
   }
   
-  // Fetch configuration when component mounts
-  componentDidMount() {
-    this.fetchConfig();
-  }
-  
   // Fetch API configuration from backend
   fetchConfig = async () => {
     try {
@@ -55,13 +50,15 @@ class ABAPAnalyzer extends React.Component {
       }
       
       const config = await response.json();
+      console.log('Received config from backend:', config);
       
+      // Use values directly from the backend without defaults
       this.setState(prevState => ({
         analysisSettings: {
           ...prevState.analysisSettings,
           apiKey: config.apiKey || '',
-          provider: config.apiProvider || 'anthropic',
-          model: config.modelName || 'claude-3-7-sonnet-20250219',
+          provider: config.apiProvider || '',
+          model: config.modelName || '',
           apiBaseUrl: config.apiBaseUrl || ''
         },
         configLoaded: true
@@ -449,3 +446,33 @@ class ABAPAnalyzer extends React.Component {
 }
 
 export default ABAPAnalyzer;
+
+
+
+{/* Environment Configuration Status */}
+<div className="mb-6 p-4 bg-gray-50 rounded-lg border">
+  <h3 className="text-sm font-medium text-gray-700 mb-2">Environment Configuration</h3>
+  <ul className="space-y-2 text-sm">
+    <li className="flex items-center justify-between">
+      <span className="text-gray-600">API Provider:</span>
+      <span className="font-medium">
+        {analysisSettings.provider || 'Not configured'}
+      </span>
+    </li>
+    <li className="flex items-center justify-between">
+      <span className="text-gray-600">Model:</span>
+      <span className="font-medium">
+        {analysisSettings.model || 'Not configured'}
+      </span>
+    </li>
+    <li className="flex items-center justify-between">
+      <span className="text-gray-600">API Key:</span>
+      <span className="font-medium">
+        {analysisSettings.apiKey 
+          ? '********' + analysisSettings.apiKey.slice(-4)
+          : 'Not configured'}
+      </span>
+    </li>
+  </ul>
+  {/* ... rest of the code ... */}
+</div>
