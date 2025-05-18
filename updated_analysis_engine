@@ -1,0 +1,68 @@
+def _create_llm(self):
+    """Create LLM client using the company proxy with OpenAI schema."""
+    try:
+        # Try newer imports first
+        try:
+            from langchain_openai import ChatOpenAI
+        except ImportError:
+            # Try older import
+            from langchain.chat_models import ChatOpenAI
+        
+        # Create kwargs dict without the problematic headers parameter
+        kwargs = {
+            "model_name": self.model_name,
+            "temperature": self.temperature,
+        }
+        
+        # Add base_url if provided
+        if self.api_base_url:
+            if 'anthropic' in self.model_name.lower():
+                kwargs["anthropic_api_url"] = self.api_base_url
+            else:
+                kwargs["openai_api_base"] = self.api_base_url
+        
+        # Add API key
+        if 'anthropic' in self.model_name.lower():
+            kwargs["anthropic_api_key"] = self.api_key
+        else:
+            kwargs["openai_api_key"] = self.api_key
+        
+        # Create the client
+        return ChatOpenAI(**kwargs)
+    except Exception as e:
+        logger.error(f"Error initializing LLM: {e}")
+        
+        # Fallback to direct client (for newer OpenAI client versions)
+        try:
+            from openai import OpenAI
+            
+            # Create the client
+            client = OpenAI(
+                api_key=self.api_key,
+                base_url=self.api_base_url if self.api_base_url else None
+            )
+            
+            # Create a wrapper class that's compatible with our code
+            class OpenAIWrapper:
+                def __init__(self, client, model, temp):
+                    self.client = client
+                    self.model = model
+                    self.temperature = temp
+                
+                def invoke(self, prompt):
+                    response = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=[{"role": "user", "content": prompt}],
+                        temperature=self.temperature
+                    )
+                    return response.choices[0].message.content
+                
+                def __call__(self, messages):
+                    # For compatibility with older LangChain versions
+                    prompt = messages[0].content if hasattr(messages[0], 'content') else str(messages[0])
+                    return self.invoke(prompt)
+            
+            return OpenAIWrapper(client, self.model_name, self.temperature)
+        except Exception as fallback_e:
+            logger.error(f"Fallback also failed: {fallback_e}")
+            raise
